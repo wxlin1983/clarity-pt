@@ -2,16 +2,22 @@ from PyDAQmx import *
 import numpy
 import time
 import clarity_ptlib
+import pickle
 
-# hello
+# Options
+OutputDiagnosis = False
+SaveEachData2CSV = False
+SaveEachData2Pickle = True
+
 # Declaration of variable passed by reference
 nChan = 2
 nSample = 50000
 fSample = 50000.0
+nAcquisition = 20
 
 # Thredshold and Clipping Value
 laser_th = 3
-th = 0.18
+th = 0.24
 cv = 3.6
 hist_arr = numpy.zeros(256, dtype=numpy.float64)
 
@@ -29,14 +35,13 @@ try:
     DAQmxCreateAIVoltageChan(taskHandle,b'Dev1/ai0:1',"",DAQmx_Val_Cfg_Default,-0.5,2.5,DAQmx_Val_Volts,None)
     DAQmxCfgSampClkTiming(taskHandle,"",fSample,DAQmx_Val_Rising,DAQmx_Val_FiniteSamps,nSample)
     
+    for ii in range(nAcquisition):
 
-    for ii in range(20):
-
-        print('Take data: ',ii)
+        print('Taking data: ',ii + 1,' of ',nAcquisition)
 
         # Reset histogram to zero
         hist_arr.fill(0)
-                
+
         # DAQmx Start Code
         DAQmxStartTask(taskHandle)
         DAQmxReadAnalogF64(taskHandle,nSample,nSample / fSample + 1,DAQmx_Val_GroupByChannel,data,nSample * nChan,byref(read),None)
@@ -50,13 +55,19 @@ try:
 
         # Calculate the total sample time
         tSample = sum(ai1 > laser_th) / fSample
+        if tSample < 0.4 * 0.1: # if the data is not enough, skip this data
+            print('Data not sufficient, skip.')
+            continue
 
-        #print('current threshold voltage: ', th)
-        #print('device dark voltage: ', numpy.mean(ai0[ai1 < laser_th]))
+        # Output diagnosis message
+        if OutputDiagnosis:
+            print('current threshold voltage: ', th)
+            print('device dark voltage mean: ', numpy.mean(ai0[ai1 < laser_th]))
+            print('device dark voltage std: ', numpy.std(ai0[ai1 < laser_th]))
+            if numpy.amax(ai0) > cv:
+                print('some measured voltage, ',numpy.amax(ai0),', is higher than the set clipping value,',cv,'.')
 
-        if numpy.amax(ai0) > cv:
-            print('some measured voltage, ',numpy.amax(ai0),', is higher than the set clipping value,',cv,'.')
-
+        # Find peaks
         climbing = False
         num_peaks = 0
         width_count = 0
@@ -86,10 +97,11 @@ try:
         towrite = numpy.append(numpy.asarray([time.time(),0,0,0,0]),hist_arr)
         clarity_ptlib.write2file(filename, fieldnames, towrite)
 
-        #numpy.savetxt('ai0'+str(ii)+'.csv', ai0, delimiter=',')
-        #numpy.savetxt('ai1'+str(ii)+'.csv', ai1, delimiter=',')
-        numpy.savetxt('data'+str(ii)+'.csv', data, delimiter=',')
-        #numpy.savetxt('hist'+str(ii)+'.csv', hist_arr, delimiter=',')
+        if SaveEachData2CSV:
+            numpy.savetxt('data' + clarity_ptlib.str4(ii) + '.csv', data, delimiter=',')
+            
+        if SaveEachData2Pickle:
+            pickle.dump(data, open('data' + clarity_ptlib.str4(ii) + '.p', "wb"))
 
 except DAQError as err:
     print("DAQmx Error Code: ", err.error)
