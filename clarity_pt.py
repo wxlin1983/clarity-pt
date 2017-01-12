@@ -3,6 +3,7 @@ import numpy
 import time
 import clarity_ptlib
 
+# hello
 # Declaration of variable passed by reference
 nChan = 2
 nSample = 50000
