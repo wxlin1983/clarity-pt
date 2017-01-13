@@ -8,6 +8,12 @@ import pickle
 OutputDiagnosis = False
 SaveEachData2CSV = False
 SaveEachData2Pickle = True
+ConnectPTSensor = False
+
+# PT Sensor connection setting
+comname = 'COM4'
+if ConnectPTSensor:
+    clarity_ptlib.pt_connect_sensor('',comname,9600)
 
 # Declaration of variable passed by reference
 nChan = 2
@@ -96,6 +102,10 @@ try:
         # Build and save data
         towrite = numpy.append(numpy.asarray([time.time(),0,0,0,0]),hist_arr)
         clarity_ptlib.write2file(filename, fieldnames, towrite)
+        
+        if ConnectPTSensor:
+            pt_data = clarity_ptlib.pt_connect_sensor('','COM4',9600)
+            numpy.savetxt('ptdata' + clarity_ptlib.str4(ii) + '.csv', pt_data, delimiter=',')
 
         if SaveEachData2CSV:
             numpy.savetxt('data' + clarity_ptlib.str4(ii) + '.csv', data, delimiter=',')
