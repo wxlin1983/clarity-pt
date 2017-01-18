@@ -1,11 +1,16 @@
 import os
 import csv
 import serial
+import time
 
-def makefieldnames():
+def cla_makefieldnames():
     fieldnames = ['time', '#/cm3', "ug/m3", "thresh", "firmware"]
     for i in range(0, 256):
         fieldnames.append(str(i))
+    return fieldnames
+
+def pt_makefieldnames():
+    fieldnames = ['time', 'mass_conc_1_0', 'mass_conc_2_5', 'mass_conc_10', 'num_conc_0_3', 'num_conc_0_5', 'num_conc_1_0', 'num_conc_2_5', 'num_conc_5_0', 'num_conc_10']
     return fieldnames
 
 def write2file(filename, fieldnames, data):
@@ -16,13 +21,13 @@ def write2file(filename, fieldnames, data):
             updater.writeheader()
         updater.writerow(dict(zip(fieldnames,data)))
 
-def str4(n):
+def str5(n):
     if not (type(n) is int):
-        raise ValueError('str4: input is not an integer.')
-    if n < 1 or n > 9999:
-        raise ValueError('str4: input is too big or too small.')
+        raise ValueError('str5: input is not an integer.')
+    if n < 0 or n > 99999:
+        raise ValueError('str5: input is too big or too small.')
     else:
-        return ('0000' + str(n))[-4:]
+        return ('00000' + str(n))[-5:]
 
 def pt_connect_sensor(dev_id, port, baudrate):
     sensor = serial.Serial(port=port,
@@ -56,3 +61,17 @@ def pt_read_data(sensor_obj, dev_id):
                             num_conc_0_3, num_conc_0_5, num_conc_1_0, 
                             num_conc_2_5, num_conc_5_0, num_conc_10]
                 return to_return
+            
+def pt_flush(sensor_obj):
+    print("Flushing buffer for",sensor_obj.port)
+    millis0 = int(round(time.time() * 1000))
+    bufferempty = False
+    while (not bufferempty):
+        pt_read_data(sensor_obj,'')
+        millis1 = int(round(time.time() * 1000))
+        if millis1 - millis0 > 500:
+            bufferempty = True
+            print("Buffer flushed")
+        else:
+            millis0 = millis1
+    return
