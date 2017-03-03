@@ -42,7 +42,7 @@ def str3(n):
         return ('000' + str(n))[-3:]
 
 
-def write2file2(filename, fieldnames, data):
+def write2file(filename, fieldnames, data):
     file_exists = os.path.isfile(filename)
     with open(filename, 'a') as file_to_update:
         updater = csv.DictWriter(

@@ -1,14 +1,13 @@
+import clarity_ptlib
 import signal
 import time
 import os
 
-import clarity_ptlib
+from os.path import expanduser
+from PyDAQmx import *
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-from os.path import expanduser
-from PyDAQmx import *
 
 # Options
 OutputDiagnosis = True

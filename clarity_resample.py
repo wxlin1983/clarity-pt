@@ -1,14 +1,13 @@
-import numpy as np
 import clarity_ptlib
-from pandas import DataFrame
-from pandas import read_csv
-import matplotlib.pyplot as plt
-from os.path import expanduser
-from PyDAQmx import *
+import re
 
+from os.path import expanduser
 from os import walk
 from os import path
 from os.path import isfile
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Options
 OutputDiagnosis = True
@@ -57,4 +56,5 @@ for ii in range(len(allheader)):
         print('\r', filenames[ii], 'resampling:', jj, end='\r')
         tmp.append(clarity_ptlib.hist8bit(
             alldata[ii][jj], allheader[ii][jj], th[ii], cv[ii]).tolist())
-    clarity_ptlib.write2file2(filefolder + filenames[ii] + '.csv', cla_fn, np.array(tmp))
+    clarity_ptlib.write2file(
+        filefolder + filenames[ii] + '.csv', cla_fn, np.array(tmp))
