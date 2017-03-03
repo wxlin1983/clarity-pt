@@ -1,4 +1,4 @@
-import clarity_ptlib
+import clarity_libraw
 import signal
 import time
 import os
@@ -22,7 +22,7 @@ filename1 = 'mvp_1707-00010oldpd'
 filename2 = 'mvp_1707-00010newpd'
 
 # Generate output fieldnames
-cla_fn = clarity_ptlib.cla_makefieldnames()
+cla_fn = clarity_libraw.cla_makefieldnames()
 
 # Create new folder for raw data
 filefoldertmp = filefolder + 'raw data - ' + \
@@ -79,13 +79,13 @@ try:
         DAQmxStopTask(taskHandle)
 
         # Convert voltage to 16-bits integer
-        dataint = clarity_ptlib.niv2i(data).astype(int16)
+        dataint = clarity_libraw.niv2i(data).astype(int16)
 
         # Create 15-bits histogram (only the positive half of 16-bits are used)
         [data0, data1] = np.split(dataint, 2)
-        header, data0hist = clarity_ptlib.mkhist(
+        header, data0hist = clarity_libraw.mkhist(
             data0, diagnosis=OutputDiagnosis, timestamp=timestamp)
-        header, data1hist = clarity_ptlib.mkhist(
+        header, data1hist = clarity_libraw.mkhist(
             data1, diagnosis=OutputDiagnosis, timestamp=timestamp)
 
         data0list.append(data0hist)
@@ -95,13 +95,13 @@ try:
         if len(headerlist) >= 1200:
             print('Flush buffer to files.')
             np.save(filefolder + filename1 + '_hist_' +
-                    clarity_ptlib.str3(filecounter) + '.npy', np.array(data0list))
+                    clarity_libraw.str3(filecounter) + '.npy', np.array(data0list))
             np.save(filefolder + filename2 + '_hist_' +
-                    clarity_ptlib.str3(filecounter) + '.npy', np.array(data1list))
+                    clarity_libraw.str3(filecounter) + '.npy', np.array(data1list))
             np.save(filefolder + filename1 + '_header_' +
-                    clarity_ptlib.str3(filecounter) + '.npy', np.array(headerlist))
+                    clarity_libraw.str3(filecounter) + '.npy', np.array(headerlist))
             np.save(filefolder + filename2 + '_header_' +
-                    clarity_ptlib.str3(filecounter) + '.npy', np.array(headerlist))
+                    clarity_libraw.str3(filecounter) + '.npy', np.array(headerlist))
             data0list = []
             data1list = []
             headerlist = []
@@ -123,11 +123,11 @@ finally:
 
 if len(headerlist) != 0:
     print('Flush buffer to files.')
-    np.save(filefolder + filename1 + '_hist_' + clarity_ptlib.str3(filecounter) +
+    np.save(filefolder + filename1 + '_hist_' + clarity_libraw.str3(filecounter) +
             '.npy', np.array(data0list))
-    np.save(filefolder + filename2 + '_hist_' + clarity_ptlib.str3(filecounter) +
+    np.save(filefolder + filename2 + '_hist_' + clarity_libraw.str3(filecounter) +
             '.npy', np.array(data1list))
-    np.save(filefolder + filename1 + '_header_' + clarity_ptlib.str3(filecounter) +
+    np.save(filefolder + filename1 + '_header_' + clarity_libraw.str3(filecounter) +
             '.npy', np.array(headerlist))
-    np.save(filefolder + filename2 + '_header_' + clarity_ptlib.str3(filecounter) +
+    np.save(filefolder + filename2 + '_header_' + clarity_libraw.str3(filecounter) +
             '.npy', np.array(headerlist))

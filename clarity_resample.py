@@ -1,4 +1,4 @@
-import clarity_ptlib
+import clarity_libraw
 import re
 
 from os.path import expanduser
@@ -14,17 +14,27 @@ OutputDiagnosis = True
 SaveEachData2CSV = True
 ShowFigure = False
 
-# Generate output fieldnames
+# Generate Output Fieldnames
+filefolder = 'C:\\Users\\james\\Desktop\\clarity-pmrawhist\\'
+califolder = 'C:\\Users\\james\\Dropbox (Clarity Movement)\\Hardware R&D\\P1 sensor\\Calibration\\'
+
+#filerawfolder = califolder + '2017_03_03_MVP test airflow 2\\raw data - 1488567851\\'
+filerawfolder = califolder + '2017_03_03_MVP test airflow 2\\raw data - 1488567854\\'
+
+
 filefolder = '.\\'
 filerawfolder = filefolder + 'raw data - 1488492697\\'
 
 # for time reference
+#filenames = ['mvp_1707-00010oldpd', 'mvp_1707-00010newpd']
 filenames = ['mvp_1707-00009oldpd', 'mvp_1707-00009newpd']
 
-th = [0.31, 0.36]
+# Threshold and Clipping Value of Old & New PD
+th = [[3.1, 4.0, 3.6], [3.1, 3.6]]
 cv = [3.6, 3.6]
 
-cla_fn = clarity_ptlib.cla_makefieldnames()
+# Create the Fieldnames
+cla_fn = clarity_libraw.cla_makefieldnames()
 
 # Read files in the given folder
 fn_header = [[] for i in range(len(filenames))]
@@ -47,14 +57,16 @@ if (path.isdir(filerawfolder)):
                 if fn_hist_re[ii].match(b.lower()):
                     fn_hist[ii].append(filerawfolder + b)
 
-allheader = clarity_ptlib.readfnlist(fn_header)
-alldata = clarity_ptlib.readfnlist(fn_hist)
+allheader = clarity_libraw.readfnlist(fn_header)
+alldata = clarity_libraw.readfnlist(fn_hist)
 
-for ii in range(len(allheader)):
-    tmp = []
-    for jj in range(len(alldata[ii])):
-        print('\r', filenames[ii], 'resampling:', jj, end='\r')
-        tmp.append(clarity_ptlib.hist8bit(
-            alldata[ii][jj], allheader[ii][jj], th[ii], cv[ii]).tolist())
-    clarity_ptlib.write2file(
-        filefolder + filenames[ii] + '.csv', cla_fn, np.array(tmp))
+for k in range(len(th[0])):
+    for ii in range(len(allheader)):
+        tmp = []
+        for jj in range(len(alldata[ii])):
+            print('\rresampling: ', jj, end='\r')
+            tmp.append(clarity_libraw.hist8bit(
+                alldata[ii][jj], allheader[ii][jj], th[ii][k], cv[ii]).tolist())
+        print('\n')
+        clarity_libraw.write2file(filefolder + filenames[ii] + '_th' + str(th[ii][k]) +
+                                  '.csv', cla_fn, np.array(tmp))
