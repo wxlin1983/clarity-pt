@@ -1,8 +1,20 @@
 import os
 import csv
-import serial
 import time
-import numpy
+import numpy as np
+import pandas as pd
+
+
+def niv2i(v):
+    y0 = 5.5166106903928235e-05
+    dy = 0.00032257093698717654
+    return (v - y0) / dy
+
+
+def nii2v(myint):
+    y0 = 5.5166106903928235e-05
+    dy = 0.00032257093698717654
+    return myint * dy + y0
 
 
 def cla_makefieldnames():
@@ -12,81 +24,123 @@ def cla_makefieldnames():
     return fieldnames
 
 
-def write2file(filename, fieldnames, data):
+def str5(n):
+    if not (type(n) is int):
+        raise ValueError('str5: number input is not an integer.')
+    if n < 0 or n > 99999:
+        raise ValueError('str5: number input is too big or too small.')
+    else:
+        return ('00000' + str(n))[-5:]
+
+
+def str3(n):
+    if not (type(n) is int):
+        raise ValueError('str3: number input is not an integer.')
+    if n < 0 or n > 999:
+        raise ValueError('str3: number input is too big or too small.')
+    else:
+        return ('000' + str(n))[-3:]
+
+
+def write2file2(filename, fieldnames, data):
     file_exists = os.path.isfile(filename)
     with open(filename, 'a') as file_to_update:
         updater = csv.DictWriter(
             file_to_update, fieldnames=fieldnames, lineterminator='\n')
         if not file_exists:
             updater.writeheader()
-        updater.writerow(dict(zip(fieldnames, data)))
+        for jj in range(data.shape[0]):
+            updater.writerow(dict(zip(fieldnames, data[jj])))
 
 
-def str5(n):
-    if not (type(n) is int):
-        raise ValueError('str5: input is not an integer.')
-    if n < 0 or n > 99999:
-        raise ValueError('str5: input is too big or too small.')
-    else:
-        return ('00000' + str(n))[-5:]
+def readfnlist(fn_list):
+    # fn_list should be a list of a list of filenames
+    # returns a list of numpy arrays
+    alllist = [[]] * len(fn_list)
+    for ii in range(len(fn_list)):
+        tmp = []
+        for jj in range(len(fn_list[ii])):
+            tmp += np.load(fn_list[ii][jj]).tolist()
+        alllist[ii] = np.array(tmp)
+    return alllist
 
 
-def mk2write(data, laser_th, th, cv, fSample):
+def hist8bit(datai, header, th, cv, **kwargs):
 
-    hist_arr = numpy.zeros(256, dtype=numpy.float64)
+    OutputDiagnosis = False
+    timestamp = time.time()
+    for key in kwargs.keys():
+        if key == "timestamp":
+            timestamp = kwargs.get(key)
+        else:
+            raise ValueError("Input argument not supported: " + key)
 
-    nChan = 2
-    OutputDiagnosis = True
+    hist_arr = np.zeros(256, dtype=np.float64)
 
-    if nChan == 2:
+    # Find peaks for channel
+    for indx in range(hist_arr.shape[0]):
 
-        [ai0, ai1] = numpy.split(data, nChan)
+        indxleft = int(round(niv2i(indx * (cv - th) / 255 + th)))
+        indxright = int(round(niv2i((indx + 1) * (cv - th) / 255 + th)))
 
-        t1 = numpy.arange(numpy.size(ai0))
-        t1 = t1[ai1 > laser_th]
-        ai0_cut = ai0[ai1 > laser_th]
+        if indxleft < 0:
+            indxleft = 0
+        elif indxleft > 32767:
+            indxleft = 32767
 
-        # Calculate the total sample time
-        tSample = sum(ai1 > laser_th) / fSample
-        if tSample < 0.4 * 0.1:  # if the data is not enough, skip this data
-            print('Data not sufficient, skip.')
-            return False, numpy.asarray([])
+        if indxright < 0:
+            indxright = 0
+        elif indxright > 32767:
+            indxright = 32767
 
-        # Output diagnosis message
-        if OutputDiagnosis:
-            print('current threshold voltage: ', th)
-            print('device dark voltage mean: ',
-                  numpy.mean(ai0[ai1 < laser_th]))
-            print('device dark voltage std: ', numpy.std(ai0[ai1 < laser_th]))
-            if numpy.amax(ai0) > cv:
-                print('some measured voltage, ', numpy.amax(ai0),
-                      ', is higher than the set clipping value,', cv, '.')
+        hist_arr[indx] = np.sum(datai[indxleft:indxright])
 
-        # Find peaks for channel
-        climbing = False
-        num_peaks = 0
-        width_count = 0
+    # Build and save data
+    return np.append(header, hist_arr)
 
-        for x in range(numpy.size(ai0_cut) - 1):
-            if (climbing & (ai0_cut[x + 1] < ai0_cut[x])):
-                climbing = False
-                if (t1[x + 1] - t1[x] == 1):
-                    if(width_count > 1):
-                        num_peaks = num_peaks + 1
-                        index = int(round(255 * (ai0_cut[x] - th) / (cv - th)))
-                        hist_arr[index] = hist_arr[index] + 1
-                else:
-                    width_count = 0
-            elif(ai0_cut[x + 1] > ai0_cut[x]):
-                climbing = True
 
-            if(ai0_cut[x] < th):
+def mkhist(data, **kwargs):
+
+    # data should be ndarray of which entry between 0 and 2**15 - 1, sampled
+    # for 1 second.
+    OutputDiagnosis = False
+    timestamp = time.time()
+
+    for key in kwargs.keys():
+        if key == "timestamp":
+            timestamp = kwargs.get(key)
+        elif key == "diagnosis":
+            OutputDiagnosis = kwargs.get(key)
+        else:
+            raise ValueError("Input argument not supported: " + key)
+
+    hist_arr = np.zeros(2**15, dtype=np.int16)
+
+    # Output diagnosis message
+    if OutputDiagnosis:
+        if np.sum(data < 0) / len(data) > 0.005:
+            print('mkhist: More than 0.5% of data are negative.')
+
+    data = data[data >= 0]
+
+    # Find peaks for channel
+    climbing = False
+    width_count = 0
+
+    for x in range(np.size(data) - 1):
+
+        if not climbing:
+            if (data[x + 1] > data[x]):
                 width_count = 0
-            else:
+                climbing = True
+        else:
+            if (data[x + 1] >= data[x]):
                 width_count = width_count + 1
+            else:
+                climbing = False
+                if(width_count > 1):
+                    index = data[x]
+                    hist_arr[index] = hist_arr[index] + 1
 
-        # Normalize the sample time to 1s
-        hist_arr = numpy.around(hist_arr / tSample)
-
-        # Build and save data
-        return True, numpy.append(numpy.asarray([time.time(), 0, 0, 0, 0]), hist_arr)
+    # Build and save data
+    return [timestamp, 0, 0, 0, 0], hist_arr.tolist()
