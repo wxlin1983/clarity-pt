@@ -61,6 +61,7 @@ if (path.isdir(filerawfolder)):
 allheader = clarity_libraw.readfnlist(fn_header)
 alldata = clarity_libraw.readfnlist(fn_hist)
 
+
 for ii in range(len(allheader)):
     for k in range(len(th[ii])):
         tmp = []
@@ -69,6 +70,6 @@ for ii in range(len(allheader)):
             tmp.append(clarity_libraw.hist8bit(
                 alldata[ii][jj], allheader[ii][jj], th[ii][k], cv[ii]).tolist())
         print('\n')
-        thN = math.modf(float(str(th[ii][k])+'00001'))
+
         clarity_libraw.write2file(
-            filefolder + filenames[ii] + 'th' + str(thN[1])[0] + str(thN[0])[2:6] + '.csv', cla_fn, np.array(tmp))
+            filefolder + filenames[ii] + 'th' + (str(th[ii][k]).replace('.','')+'0000')[0:5] + '.csv', cla_fn, np.array(tmp))
