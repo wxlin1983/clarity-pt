@@ -1,5 +1,6 @@
 import clarity_libraw
 import re
+import math
 
 from os.path import expanduser
 from os import walk
@@ -8,8 +9,6 @@ from os.path import isfile
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-# hi
 
 # Options
 OutputDiagnosis = True
@@ -24,8 +23,8 @@ califolder = 'C:\\Users\\james\\Dropbox (Clarity Movement)\\Hardware R&D\\P1 sen
 filerawfolder = califolder + '2017_03_03_MVP test airflow 2\\raw data - 1488567854\\'
 
 
-filefolder = '.\\'
-filerawfolder = filefolder + 'raw data - 1488492697\\'
+#filefolder = '.\\'
+# filerawfolder = filefolder + 'raw data - 1488492697\\'
 
 # for time reference
 #filenames = ['mvp_1707-00010oldpd', 'mvp_1707-00010newpd']
@@ -70,5 +69,6 @@ for ii in range(len(allheader)):
             tmp.append(clarity_libraw.hist8bit(
                 alldata[ii][jj], allheader[ii][jj], th[ii][k], cv[ii]).tolist())
         print('\n')
+        thN = math.modf(float(str(th[ii][k])+'00001'))
         clarity_libraw.write2file(
-            filefolder + filenames[ii] + '_th' + str(th[ii][k]) + '.csv', cla_fn, np.array(tmp))
+            filefolder + filenames[ii] + 'th' + str(thN[1])[0] + str(thN[0])[2:6] + '.csv', cla_fn, np.array(tmp))
