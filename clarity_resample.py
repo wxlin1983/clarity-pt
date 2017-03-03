@@ -9,6 +9,8 @@ from os.path import isfile
 import matplotlib.pyplot as plt
 import numpy as np
 
+#hi
+
 # Options
 OutputDiagnosis = True
 SaveEachData2CSV = True
