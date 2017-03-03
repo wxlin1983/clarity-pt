@@ -9,7 +9,7 @@ from os.path import isfile
 import matplotlib.pyplot as plt
 import numpy as np
 
-#hi
+# hi
 
 # Options
 OutputDiagnosis = True
@@ -62,13 +62,13 @@ if (path.isdir(filerawfolder)):
 allheader = clarity_libraw.readfnlist(fn_header)
 alldata = clarity_libraw.readfnlist(fn_hist)
 
-for k in range(len(th[0])):
-    for ii in range(len(allheader)):
+for ii in range(len(allheader)):
+    for k in range(len(th[ii])):
         tmp = []
         for jj in range(len(alldata[ii])):
             print('\rresampling: ', jj, end='\r')
             tmp.append(clarity_libraw.hist8bit(
                 alldata[ii][jj], allheader[ii][jj], th[ii][k], cv[ii]).tolist())
         print('\n')
-        clarity_libraw.write2file(filefolder + filenames[ii] + '_th' + str(th[ii][k]) +
-                                  '.csv', cla_fn, np.array(tmp))
+        clarity_libraw.write2file(
+            filefolder + filenames[ii] + '_th' + str(th[ii][k]) + '.csv', cla_fn, np.array(tmp))
