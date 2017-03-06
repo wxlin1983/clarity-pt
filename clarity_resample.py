@@ -16,23 +16,22 @@ SaveEachData2CSV = True
 ShowFigure = False
 
 # Generate Output Fieldnames
-filefolder = 'C:\\Users\\james\\Desktop\\clarity-pmrawhist\\'
-califolder = 'C:\\Users\\james\\Dropbox (Clarity Movement)\\Hardware R&D\\P1 sensor\\Calibration\\'
+filefolder = expanduser('~') + '\\Desktop\\clarity-pmrawhist\\'
+califolder = expanduser(
+    '~') + '\\Dropbox (Clarity Movement)\\Hardware R&D\\P1 sensor\\Calibration\\'
 
-#filerawfolder = califolder + '2017_03_03_MVP test airflow 2\\raw data - 1488567851\\'
-filerawfolder = califolder + '2017_03_03_MVP test airflow 2\\raw data - 1488567854\\'
+filerawfolder = califolder + '2017_03_03_MVP test airflow 2\\raw data - 1488573443\\'
+# filerawfolder = califolder + '2017_03_03_MVP test airflow 2\\raw data - 1488573440\\'
 
-
-#filefolder = '.\\'
-# filerawfolder = filefolder + 'raw data - 1488492697\\'
+filefolder = '.\\'
 
 # for time reference
-#filenames = ['mvp_1707-00010oldpd', 'mvp_1707-00010newpd']
-filenames = ['mvp_1707-00009oldpd', 'mvp_1707-00009newpd']
+filenames = ['mvp_1707-00010oldpd', 'mvp_1707-00010newpd']
+# filenames = ['mvp_1707-00009oldpd', 'mvp_1707-00009newpd']
 
 # Threshold and Clipping Value of Old & New PD
-th = [[3.1, 4.0, 3.6], [3.1, 3.6]]
-cv = [3.6, 3.6]
+th = [[0.355, 0.36, 0.365], [0.305, 0.31, 0.315]]
+cv = [3.3, 3.3]
 
 # Create the Fieldnames
 cla_fn = clarity_libraw.cla_makefieldnames()
@@ -72,4 +71,4 @@ for ii in range(len(allheader)):
         print('\n')
 
         clarity_libraw.write2file(
-            filefolder + filenames[ii] + 'th' + (str(th[ii][k]).replace('.','')+'0000')[0:5] + '.csv', cla_fn, np.array(tmp))
+            filefolder + filenames[ii] + 'th' + (str(th[ii][k]).replace('.', '') + '0000')[0:5] + '.csv', cla_fn, np.array(tmp))
