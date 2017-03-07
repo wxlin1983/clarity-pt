@@ -25,13 +25,18 @@ def getvhist(data, indx):
     x = clarity_libraw.niv2ig(data[indx], y0, dy).astype(np.int16)
     x = x[x > 0]
     v = clarity_libraw.nii2vg(np.array(range(maxindex)), y0, dy)
-    hist_arr = np.zeros(maxindex, dtype=np.int16)
+    hist_arr = np.zeros(maxindex, dtype=np.int32)
     for index in x:
         hist_arr[index] += 1
     return np.concatenate((hist_arr.reshape(1, -1), v.reshape(1, -1)), axis=0)
 
 vhist0 = getvhist(alldata[0], 1)
 vhist1 = getvhist(alldata[1], 1)
-plt.semilogy(vhist0[1][800:1200], vhist0[0][800:1200])
-plt.semilogy(vhist1[1][800:1200], vhist1[0][800:1200])
+
+vhist0[0] = vhist0[0] / np.sum(vhist0[0])
+vhist1[0] = vhist1[0] / np.sum(vhist1[0])
+
+plotrange = range(800, 3000)
+plt.semilogy(vhist0[1][plotrange], vhist0[0][plotrange])
+plt.semilogy(vhist1[1][plotrange], vhist1[0][plotrange])
 plt.show()
