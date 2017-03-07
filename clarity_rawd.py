@@ -79,7 +79,13 @@ try:
         DAQmxStopTask(taskHandle)
 
         # Convert voltage to 16-bits integer
-        dataint = clarity_libraw.niv2i(data).astype(int16)
+        if True:
+            dataint = clarity_libraw.niv2i(data).astype(np.int16)
+        else:
+            # check ADC setting
+            if ii == 0:
+                y0, dy = clarity_libraw.gety0dy(data)
+            dataint = clarity_libraw.niv2ig(data, y0, dy).astype(np.int16)
 
         # Create 15-bits histogram (only the positive half of 16-bits are used)
         [data0, data1] = np.split(dataint, 2)

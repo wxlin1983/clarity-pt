@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 
 # hello world
+
+
 def niv2i(v):
     y0 = 5.5166106903928235e-05
     dy = 0.00032257093698717654
@@ -15,6 +17,21 @@ def nii2v(myint):
     y0 = 5.5166106903928235e-05
     dy = 0.00032257093698717654
     return myint * dy + y0
+
+
+def niv2ig(v, y0, dy):
+    return np.array(list(map(lambda vv: (vv - y0) / dy, v.tolist())))
+
+
+def nii2vg(myint, y0, dy):
+    return np.array(list(map(lambda ii: ii * dy + y0, myint.tolist())))
+
+
+def gety0dy(data):
+    x = data
+    x = abs(x[:-1] - x[1:])
+    dy = np.unique(np.sort(x))[1]
+    return np.mean(data / dy % 1) * dy, dy
 
 
 def cla_makefieldnames():

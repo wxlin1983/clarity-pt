@@ -26,7 +26,7 @@ try:
     # DAQmx Configure Code
     DAQmxCreateTask("", byref(taskHandle))
     DAQmxCreateAIVoltageChan(taskHandle, b'Dev5/ai0:1',
-                             "", DAQmx_Val_Diff, -0.5, 5, DAQmx_Val_Volts, None)
+                             "", DAQmx_Val_Diff, 0, 5, DAQmx_Val_Volts, None)
     DAQmxCfgSampClkTiming(taskHandle, "", fSample,
                           DAQmx_Val_Rising, DAQmx_Val_FiniteSamps, nSample)
 
