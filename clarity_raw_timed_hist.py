@@ -13,9 +13,9 @@ plotrange = range(800, 1600)
 # Generate output fieldnames
 home = expanduser("~")
 filefolder = home + \
-    '\\Dropbox (Clarity Movement)\\Hardware R&D\\P1 sensor\\Calibration\\2017_03_06 EMI New vs Old Design\\raw data\\'
+    '\\Dropbox (Clarity Movement)\\Hardware R&D\\Sensirion\\MVP test\\2017_03_09 MVPx4\\raw data\\'
 
-filenames = ['unnamed-01.npy']
+filenames = ['1707-00007 and unnamed-01.npy']
 # filenames = ['1707-00010.npy']
 
 alldata = []
@@ -44,13 +44,13 @@ x = vhist0.T[plotrange].T
 xmean = np.sum(x[0] * x[1]) / np.sum(x[0])
 xstd = (np.sum(x[0] * ((x[1] - xmean)**2)) / np.sum(x[0]))**0.5
 wemc, = plt.semilogy(vhist0[1][plotrange], vhist0[0][
-                     plotrange], label='ORIGINAL PD, mean: ' + str(xmean)[0:5] + ', std: ' + str(xstd)[0:5])
+                     plotrange], label='1707-00007, mean: ' + str(xmean)[0:5] + ', std: ' + str(xstd)[0:5])
 
 x = vhist1.T[plotrange].T
 xmean = np.sum(x[0] * x[1]) / np.sum(x[0])
 xstd = (np.sum(x[0] * ((x[1] - xmean)**2)) / np.sum(x[0]))**0.5
 woemc, = plt.semilogy(vhist1[1][plotrange], vhist1[0][
-                      plotrange], label='NEW PD, mean: ' + str(xmean)[0:5] + ', std: ' + str(xstd)[0:5])
+                      plotrange], label='unnamed-01, mean: ' + str(xmean)[0:5] + ', std: ' + str(xstd)[0:5])
 
 plt.xlabel('Raw Voltage (V)')
 plt.ylabel('Normalized Counts')

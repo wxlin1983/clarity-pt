@@ -10,15 +10,12 @@ import numpy as np
 
 # Options
 OutputDiagnosis = True
-ShowFigure = False
 
 # Set folder and file names
-home = expanduser("~")
-filefolder = home + \
-    '\\Dropbox (Clarity Movement)\\Hardware R&D\\P1 sensor\\Calibration\\2017_02_27_MVP test\\'
-filefolder = '.\\'
-filename1 = 'mvp_1707-00010oldpd'
-filename2 = 'mvp_1707-00010newpd'
+home = expanduser("~") + '\\Dropbox (Clarity Movement)\\Hardware R&D\\'
+filefolder = home + 'Sensirion\\MVP test\\2017_03_09 MVPx4\\'
+filename1 = 'mvp_1707-00007'
+filename2 = 'unnamed-01'
 
 # Generate output fieldnames
 cla_fn = clarity_libraw.cla_makefieldnames()
@@ -44,7 +41,7 @@ signal.signal(signal.SIGINT, signal_handler)
 nChan = 2
 nSample = 50000
 fSample = 50000
-nAcquisition = 20
+nAcquisition = 36000
 
 # Preparing buffer
 taskHandle = TaskHandle()
@@ -57,7 +54,7 @@ try:
     # Configure DAQmx
     print('Configure DAQmx.')
     DAQmxCreateTask("", byref(taskHandle))
-    DAQmxCreateAIVoltageChan(taskHandle, b'Dev2/ai0:1',
+    DAQmxCreateAIVoltageChan(taskHandle, b'Dev1/ai0:1',
                              "", DAQmx_Val_Diff, 0, 5, DAQmx_Val_Volts, None)
     DAQmxCfgSampClkTiming(taskHandle, "", fSample,
                           DAQmx_Val_Rising, DAQmx_Val_FiniteSamps, nSample)
@@ -81,13 +78,15 @@ try:
         DAQmxStopTask(taskHandle)
 
         # Convert voltage to 16-bits integer
-        if True:
-            dataint = clarity_libraw.niv2i(data).astype(np.int16)
+        if False:
+            dataint = np.round(clarity_libraw.niv2i(data)).astype(np.int16)
         else:
             # check ADC setting
             if ii == 0:
                 y0, dy = clarity_libraw.gety0dy(data)
-            dataint = clarity_libraw.niv2ig(data, y0, dy).astype(np.int16)
+                np.save(filefolder + 'y0dy.npy', np.array([y0, dy]))
+            dataint = np.round(clarity_libraw.niv2ig(
+                data, y0, dy)).astype(np.int16)
 
         # Create 15-bits histogram (only the positive half of 16-bits are used)
         [data0, data1] = np.split(dataint, 2)
