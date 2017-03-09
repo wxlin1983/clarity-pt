@@ -7,7 +7,6 @@ from os.path import expanduser
 from PyDAQmx import *
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Options
 OutputDiagnosis = True
@@ -55,18 +54,21 @@ data = np.zeros((nChan * nSample,), dtype=np.float64)
 filecounter = 0
 try:
 
-    print('Start data acquisition.')
-    print('To avoid loss of data, press Ctrl-C if you wish to terminate the program earlier.')
     # Configure DAQmx
+    print('Configure DAQmx.')
     DAQmxCreateTask("", byref(taskHandle))
     DAQmxCreateAIVoltageChan(taskHandle, b'Dev2/ai0:1',
                              "", DAQmx_Val_Diff, 0, 5, DAQmx_Val_Volts, None)
     DAQmxCfgSampClkTiming(taskHandle, "", fSample,
                           DAQmx_Val_Rising, DAQmx_Val_FiniteSamps, nSample)
 
+    print('Start data acquisition.')
+    print('Press Ctrl-C to terminate the program earlier.')
+
     data0list = []
     data1list = []
     headerlist = []
+
     for ii in range(nAcquisition):
 
         print('Taking data: ', ii + 1, ' of ', nAcquisition)
@@ -115,7 +117,7 @@ try:
 
         # Break the loop if user interrupt
         if intr:
-            print('User interrupted.')
+            print('User interrupted. Terminating the program.')
             break
 
 except DAQError as err:
