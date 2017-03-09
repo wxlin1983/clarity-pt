@@ -1,19 +1,19 @@
 import numpy as np
+import clarity_libraw
 from os.path import expanduser
 from PyDAQmx import *
 
 # Options
-SaveEachData2CSV = True
-SaveEachData2NPY = False
+SaveEachData2CSV = False
+SaveEachData2NPY = True
 
-# Generate output fieldnames
-home = expanduser("~")
-filefolder = home + \
-    '\\Dropbox (Clarity Movement)\\Hardware R&D\\P1 sensor\\Calibration\\2017_03_06 EMI New vs Old Design\\'
+# Set folder and file names
+home = expanduser("~") + '\\Dropbox (Clarity Movement)\\Hardware R&D\\'
+filefolder = home + 'Sensirion\\MVP test\\2017_03_09 MVPx4\\'
 
 # Declaration of variable passed by reference
 nChan = 2
-nSample = 500000
+nSample = 15000000
 fSample = 50000
 nAcquisition = 1
 
@@ -44,11 +44,11 @@ try:
 
         if SaveEachData2CSV:
             np.savetxt(filefolder + 'raw data\\' +
-                          clarity_ptlib.str5(ii) + '.csv', data2, delimiter=',')
+                       clarity_libraw.str5(ii) + '.csv', data2, delimiter=',')
 
         if SaveEachData2NPY:
             np.save(filefolder + 'raw data\\' +
-                       clarity_ptlib.str5(ii) + '.npy', data2)
+                    clarity_libraw.str5(ii) + '.npy', data2)
 
 except DAQError as err:
     print("DAQmx Error Code: ", err.error)
